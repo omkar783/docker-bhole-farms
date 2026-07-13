@@ -6,8 +6,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL || "";
-  const adapter = new PrismaPg({ connectionString });
+  const raw = process.env.DATABASE_URL || "";
+  const url = new URL(raw);
+  url.password = decodeURIComponent(url.password);
+  const adapter = new PrismaPg(url.toString());
   return new PrismaClient({ adapter });
 }
 
