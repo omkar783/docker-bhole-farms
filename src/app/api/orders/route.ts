@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendOrderNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +14,18 @@ export async function POST(req: Request) {
         quantity: body.quantity || 1,
         message: body.message || null,
       },
+      include: { product: true },
     });
+
+    sendOrderNotification({
+      customerName: body.customerName,
+      phone: body.phone,
+      email: body.email,
+      productName: order.product?.name,
+      quantity: body.quantity || 1,
+      message: body.message,
+    });
+
     return NextResponse.json({ success: true, id: order.id });
   } catch {
     return NextResponse.json(

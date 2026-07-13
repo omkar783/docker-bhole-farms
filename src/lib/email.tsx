@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { render } from "@react-email/components";
 import OrderNotification from "@/emails/order-notification";
 import ContactNotification from "@/emails/contact-notification";
 
@@ -23,11 +24,12 @@ interface ContactNotificationData {
 
 export async function sendOrderNotification(data: OrderNotificationData) {
   try {
+    const html = await render(<OrderNotification {...data} />);
     await resend.emails.send({
       from: "Bhole Farms <onboarding@resend.dev>",
       to: adminEmail,
       subject: `New Order Enquiry — ${data.customerName}`,
-      react: <OrderNotification {...data} />,
+      html,
       replyTo: data.email || undefined,
     });
   } catch (error) {
@@ -37,11 +39,12 @@ export async function sendOrderNotification(data: OrderNotificationData) {
 
 export async function sendContactNotification(data: ContactNotificationData) {
   try {
+    const html = await render(<ContactNotification {...data} />);
     await resend.emails.send({
       from: "Bhole Farms <onboarding@resend.dev>",
       to: adminEmail,
       subject: `New Contact Message — ${data.name}`,
-      react: <ContactNotification {...data} />,
+      html,
       replyTo: data.email,
     });
   } catch (error) {
