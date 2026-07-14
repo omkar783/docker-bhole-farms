@@ -8,7 +8,13 @@ export async function createGalleryItem(formData: FormData) {
   const image = formData.get("image") as string;
   const category = formData.get("category") as string;
 
-  await prisma.galleryItem.create({ data: { title, image, category } });
+  await prisma.galleryItem.create({
+    data: {
+      title,
+      category,
+      images: image ? { create: { imagePath: image } } : undefined,
+    },
+  });
   revalidatePath("/gallery");
   revalidatePath("/admin/gallery");
 }

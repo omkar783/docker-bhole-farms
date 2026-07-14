@@ -7,7 +7,7 @@ export async function updateOrderStatus(id: string, formData: FormData) {
   const status = formData.get("status") as string;
   await prisma.order.update({
     where: { id },
-    data: { status: status as any },
+    data: { status: status as import("@/generated/prisma/client").OrderStatus },
   });
   revalidatePath("/admin/orders");
 }

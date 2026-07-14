@@ -13,9 +13,10 @@ export async function createProduct(formData: FormData) {
   const isSeasonal = formData.get("isSeasonal") === "on";
   const season = formData.get("season") as string;
   const stock = parseInt(formData.get("stock") as string) || null;
+  const imageUrl = formData.get("image") as string;
 
   await prisma.product.create({
-    data: { name, slug, description, price, categoryId, isFeatured, isSeasonal, season, stock },
+    data: { name, slug, description, price, categoryId, isFeatured, isSeasonal, season, stock, images: imageUrl ? { create: { imagePath: imageUrl } } : undefined },
   });
 
   revalidatePath("/");
@@ -33,10 +34,14 @@ export async function updateProduct(id: string, formData: FormData) {
   const isSeasonal = formData.get("isSeasonal") === "on";
   const season = formData.get("season") as string;
   const stock = parseInt(formData.get("stock") as string) || null;
+  const imageUrl = formData.get("image") as string;
+
+  const data: Record<string, unknown> = { name, slug, description, price, categoryId, isFeatured, isSeasonal, season, stock };
+  if (imageUrl) data.images = { create: { imagePath: imageUrl } };
 
   await prisma.product.update({
     where: { id },
-    data: { name, slug, description, price, categoryId, isFeatured, isSeasonal, season, stock },
+    data,
   });
 
   revalidatePath("/");

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { logout } from "@/actions/auth";
+import { Toaster } from "sonner";
 
 const adminNav = [
   { href: "/admin/dashboard", label: "Dashboard" },
@@ -53,6 +54,7 @@ export default async function AdminLayout({
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-6">{children}</main>
+      <Toaster position="top-right" richColors closeButton />
     </div>
   );
 }

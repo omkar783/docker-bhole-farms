@@ -1,9 +1,11 @@
 "use client";
 
+import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { createProduct, updateProduct } from "@/actions/products";
 
 interface Category {
   id: string;
@@ -12,7 +14,7 @@ interface Category {
 
 interface ProductFormProps {
   categories: Category[];
-  action: (formData: FormData) => Promise<void>;
+  productId?: string;
   defaultValues?: {
     name?: string;
     slug?: string;
@@ -23,11 +25,19 @@ interface ProductFormProps {
     isSeasonal?: boolean;
     season?: string | null;
     stock?: number | null;
+    images?: string[];
   };
 }
 
-export function ProductForm({ categories, action, defaultValues }: ProductFormProps) {
-  const formAction = action;
+export function ProductForm({ categories, productId, defaultValues }: ProductFormProps) {
+  const action = productId ? updateProduct.bind(null, productId) : createProduct;
+
+  const [, formAction, pending] = useActionState(
+    async (_prev: unknown, formData: FormData) => {
+      await action(formData);
+    },
+    undefined
+  );
 
   return (
     <form action={formAction} className="max-w-2xl space-y-4">
@@ -84,7 +94,13 @@ export function ProductForm({ categories, action, defaultValues }: ProductFormPr
         <Label htmlFor="season">Season</Label>
         <Input id="season" name="season" defaultValue={defaultValues?.season || ""} placeholder="e.g., Summer, Monsoon" />
       </div>
-      <Button type="submit">Save Product</Button>
+      <div className="space-y-2">
+        <Label htmlFor="image">Image URL</Label>
+        <Input id="image" name="image" defaultValue={defaultValues?.images?.[0] || ""} placeholder="/images/product-name.jpg" />
+      </div>
+      <Button type="submit" disabled={pending}>
+        {pending ? "Saving..." : productId ? "Update Product" : "Save Product"}
+      </Button>
     </form>
   );
 }
