@@ -30,7 +30,7 @@ export default async function GalleryPage() {
         primaryCTA={{ label: "Plan Your Visit", href: "/about" }}
         secondaryCTA={{ label: "View Products", href: "/products" }}
         rightImage="https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=600&q=80"
-        rightImageAlt="Fresh Jamhul Berries"
+        rightImageAlt="Fresh Jamun Berries"
       />
 
       {/* Gallery */}

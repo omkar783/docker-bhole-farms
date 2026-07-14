@@ -33,25 +33,20 @@ const process = [
 ];
 
 const timeline = [
-  { year: "2015", title: "The Beginning", desc: "Bhole Farms was founded with 5 acres of family land and a vision for organic farming." },
-  { year: "2017", title: "First Harvest", desc: "Our first organic crop was harvested and shared with local communities." },
-  { year: "2019", title: "Expansion", desc: "Expanded to 25+ acres, adding mango orchards and seasonal vegetable farming." },
-  { year: "2021", title: "Digital Reach", desc: "Launched online ordering and delivery to bring farm-fresh produce to more homes." },
-  { year: "2023", title: "Community", desc: "500+ happy customers. Supplying to restaurants and stores across Maharashtra." },
-  { year: "2025+", title: "The Future", desc: "Expanding our organic network and bringing more varieties to your table." },
+  { year: "2020", title: "The Beginning", desc: "Bhole Farms was founded with a vision for organic farming and a commitment to chemical-free produce." },
+  { year: "2021", title: "First Harvest", desc: "Our first organic crop was harvested and shared with local communities." },
+  { year: "2022", title: "Growth", desc: "Expanded fruit varieties, adding Kesar and Alphonso mango orchards alongside seasonal crops." },
+  { year: "2023", title: "Local Customer Growth", desc: "Growing demand from families and local markets for our fresh organic produce." },
+  { year: "2024", title: "Sustainable Farming Improvements", desc: "Adopted advanced water conservation and natural composting methods across the farm." },
+  { year: "2025", title: "Community Growth", desc: "Hundreds of happy customers. Supplying to restaurants and stores across Maharashtra." },
+  { year: "2026+", title: "Website Launch, Online Orders & Future Expansion", desc: "Expanding our organic network, launching online ordering, and bringing more varieties to your table." },
 ];
 
 const fallbackPosts = [
-  { id: "1", slug: "journey-of-kesar-mangoes", title: "The Journey of Our Kesar Mangoes", excerpt: "From tiny blossoms to the sweetest mangoes, see how nature works its magic.", coverImage: "https://images.unsplash.com/photo-1629828874514-d53eeea7a101?w=900&q=80", category: "Mangoes", readTime: "5 min read", createdAt: new Date("2026-06-05") },
-  { id: "2", slug: "jambhul-natures-purple-treasure", title: "Jambhul - Nature's Purple Treasure", excerpt: "Health benefits, growing process, and why jamun is a superfruit.", coverImage: "https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=900&q=80", category: "Jambhul (Jamun)", readTime: "4 min read", createdAt: new Date("2026-05-28") },
-  { id: "3", slug: "why-organic-farming-matters", title: "Why Organic Farming Matters", excerpt: "How organic farming protects our health, soil, and future generations.", coverImage: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=900&q=80", category: "Organic Farming", readTime: "6 min read", createdAt: new Date("2026-05-20") },
-  { id: "4", slug: "day-in-the-life-at-bhole-farms", title: "A Day in the Life at Bhole Farms", excerpt: "Sunrise to sunset - a glimpse of daily life on our organic farm.", coverImage: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&q=80", category: "Farm Life", readTime: "3 min read", createdAt: new Date("2026-05-15") },
-];
-
-const testimonials = [
-  { name: "Priya Sharma", role: "Home Chef, Pune", content: "The Alphonso mangoes from Bhole Farms are the best I've ever had. Pure sweetness." },
-  { name: "Rahul Deshmukh", role: "Fitness Coach, Mumbai", content: "I trust Bhole Farms for all my organic vegetables. Fresh, clean, and always on time." },
-  { name: "Anita Patel", role: "Restaurant Owner, Nagpur", content: "Our guests notice the difference. Premium quality produce every single time." },
+  { id: "1", slug: "journey-of-kesar-mangoes", title: "The Journey of Our Kesar Mangoes", excerpt: "From tiny blossoms to the sweetest mangoes, see how nature works its magic.", coverImage: "/images/kesar-mango.jpg", category: "Mangoes", readTime: "5 min read", createdAt: new Date("2026-06-05") },
+  { id: "2", slug: "jamun-natures-purple-treasure", title: "Jamun - Nature's Purple Treasure", excerpt: "Health benefits, growing process, and why jamun is a superfruit.", coverImage: "/images/jambhul-jamun.jpg", category: "Jamun", readTime: "4 min read", createdAt: new Date("2026-05-28") },
+  { id: "3", slug: "why-organic-farming-matters", title: "Why Organic Farming Matters", excerpt: "How organic farming protects our health, soil, and future generations.", coverImage: "/images/farmer-harvesting.jpg", category: "Organic Farming", readTime: "6 min read", createdAt: new Date("2026-05-20") },
+  { id: "4", slug: "day-in-the-life-at-bhole-farms", title: "A Day in the Life at Bhole Farms", excerpt: "Sunrise to sunset - a glimpse of daily life on our organic farm.", coverImage: "/images/about-drone-orchard.jpg", category: "Farm Life", readTime: "3 min read", createdAt: new Date("2026-05-15") },
 ];
 
 export default async function AboutPage() {
@@ -66,7 +61,7 @@ export default async function AboutPage() {
         excerpt: post.excerpt || "Fresh updates from Bhole Farms.",
         coverImage: post.coverImage || "", category: "Farm Life", readTime: "5 min read", createdAt: post.createdAt,
       }))
-    : fallbackPosts;
+    : [];
   return (
     <>
       {/* Premium Brand Hero — Bhole Farms Story */}
@@ -103,7 +98,7 @@ export default async function AboutPage() {
               <AnimatedSection>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90 shadow-sm">
                   <svg className="w-3 h-3 text-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                  Since 2015
+                  Since 2020
                 </span>
               </AnimatedSection>
 
@@ -265,7 +260,7 @@ export default async function AboutPage() {
         <div className="relative container mx-auto px-4">
           <AnimatedStagger className="grid grid-cols-2 gap-8 md:grid-cols-4" staggerDelay={0.08}>
             {[
-              { value: "10+", label: "Years of Farming", icon: "🌾" },
+              { value: "5+", label: "Years of Farming", icon: "🌾" },
               { value: "500+", label: "Happy Customers", icon: "👥" },
               { value: "25+", label: "Fruit Varieties", icon: "🥭" },
               { value: "100%", label: "Organic Promise", icon: "🌿" },
@@ -371,8 +366,12 @@ export default async function AboutPage() {
             ))}
           </AnimatedStagger>
 
-          {posts.length === 0 && (
-            <p className="mt-4 text-center text-xs text-muted-foreground">Showing sample articles until published posts are added.</p>
+          {displayPosts.length === 0 && (
+            <div className="mt-10 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-3xl mb-4">📝</div>
+              <h3 className="font-heading text-xl font-bold text-foreground">Blogs Coming Soon</h3>
+              <p className="mt-2 text-muted-foreground text-sm max-w-sm mx-auto">We&apos;re working on sharing our farm stories, seasonal updates, and organic farming insights. Stay tuned!</p>
+            </div>
           )}
 
           <AnimatedSection className="mt-10 rounded-2xl overflow-hidden gradient-green relative">
@@ -389,29 +388,6 @@ export default async function AboutPage() {
               </div>
             </div>
           </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="section-padding">
-        <div className="container mx-auto px-4">
-          <AnimatedSection className="text-center">
-            <span className="text-xs font-button font-bold uppercase tracking-[0.2em] text-primary">Testimonials</span>
-            <h2 className="mt-2 font-heading text-4xl md:text-5xl font-bold text-foreground">What People Say</h2>
-          </AnimatedSection>
-          <AnimatedStagger className="mt-10 grid gap-6 md:grid-cols-3" staggerDelay={0.1}>
-            {testimonials.map((t) => (
-              <AnimatedChild key={t.name}>
-                <div className="rounded-2xl bg-white border border-border/40 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">&ldquo;{t.content}&rdquo;</p>
-                  <div className="mt-4 flex items-center gap-3 pt-4 border-t border-border/40">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{t.name.charAt(0)}</div>
-                    <div><p className="text-sm font-semibold">{t.name}</p><p className="text-xs text-muted-foreground">{t.role}</p></div>
-                  </div>
-                </div>
-              </AnimatedChild>
-            ))}
-          </AnimatedStagger>
         </div>
       </section>
 

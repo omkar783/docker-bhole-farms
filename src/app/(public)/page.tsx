@@ -37,12 +37,6 @@ const features = [
   },
 ];
 
-const reviews = [
-  { name: "Priya Sharma", role: "Home Chef, Pune", content: "The Alphonso mangoes from Bhole Farms are the best I've ever had. Pure sweetness.", rating: 5 },
-  { name: "Rahul Deshmukh", role: "Fitness Coach, Mumbai", content: "I trust Bhole Farms for all my organic vegetables. Fresh, clean, and always on time.", rating: 5 },
-  { name: "Anita Patel", role: "Restaurant Owner, Nagpur", content: "Our guests notice the difference. Premium quality produce every single time.", rating: 5 },
-];
-
 export default async function HomePage() {
   const [featuredProducts, settings] = await Promise.all([
     prisma.product.findMany({
@@ -155,14 +149,14 @@ export default async function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 </div>
-                {/* Floating stat card */}
-                <div className="absolute -bottom-5 -right-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-5 border border-border/40">
-                  <p className="font-heading text-3xl font-bold text-primary">25+</p>
-                  <p className="text-xs text-muted-foreground">Acres of Orchard</p>
-                </div>
                 {/* Floating badge */}
                 <div className="absolute -top-4 -left-4 bg-accent/90 backdrop-blur-md rounded-2xl shadow-lg px-4 py-2 border border-accent/20">
-                  <p className="text-xs font-bold text-primary">Est. 2015</p>
+                  <p className="text-xs font-bold text-primary">Since 2020</p>
+                </div>
+                {/* Floating card */}
+                <div className="absolute -bottom-5 -right-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-5 border border-border/40">
+                  <p className="font-heading text-xl font-bold text-primary">Family Owned</p>
+                  <p className="text-xs text-muted-foreground">Rooted in tradition</p>
                 </div>
               </div>
             </AnimatedSection>
@@ -178,7 +172,7 @@ export default async function HomePage() {
               {/* Heading */}
               <h2 className="mt-6 font-heading text-4xl sm:text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
                 Growing Premium Fruits<br />
-                <span className="text-primary">with Love Since 2015</span>
+                <span className="text-primary">Rooted in Nature, Growing Since 2020</span>
               </h2>
 
               {/* Description */}
@@ -207,13 +201,12 @@ export default async function HomePage() {
               </div>
 
               {/* Farm Statistics */}
-              <div className="mt-10 grid grid-cols-5 gap-3">
+              <div className="mt-10 grid grid-cols-4 gap-4">
                 {[
-                  { icon: "🌳", value: "25+", label: "Acres" },
                   { icon: "🥭", value: "15+", label: "Varieties" },
                   { icon: "😊", value: "5000+", label: "Happy" },
                   { icon: "🌿", value: "100%", label: "Organic" },
-                  { icon: "👨‍🌾", value: "Since", label: "2015" },
+                  { icon: "👨‍🌾", value: "Since", label: "2020" },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
                     <span className="text-lg">{s.icon}</span>
@@ -247,32 +240,29 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Why Choose Bhole Farms */}
       <section className="section-padding relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-64 gradient-cream" />
+        <div className="absolute inset-0 leaf-pattern opacity-20" />
         <div className="relative container mx-auto px-4">
           <AnimatedSection className="text-center">
-            <span className="text-xs font-button font-bold uppercase tracking-[0.2em] text-primary">Testimonials</span>
-            <h2 className="mt-2 font-heading text-4xl md:text-5xl font-bold text-foreground">What Our Customers Say</h2>
-            <p className="mt-2 text-muted-foreground max-w-lg mx-auto">Real stories from people who love our produce.</p>
+            <span className="text-xs font-button font-bold uppercase tracking-[0.2em] text-primary">Why Bhole Farms</span>
+            <h2 className="mt-2 font-heading text-4xl md:text-5xl font-bold text-foreground">Why Choose Bhole Farms?</h2>
+            <p className="mt-2 text-muted-foreground max-w-lg mx-auto">Quality you can trust, freshness you can taste.</p>
           </AnimatedSection>
-          <AnimatedStagger className="mt-10 grid gap-6 md:grid-cols-3" staggerDelay={0.1}>
-            {reviews.map((review) => (
-              <AnimatedChild key={review.name}>
-                <div className="group rounded-2xl bg-white border border-border/40 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                  <div className="flex gap-1 text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <svg key={i} className={`w-4 h-4 ${i < review.rating ? "text-amber-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                    ))}
+          <AnimatedStagger className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" staggerDelay={0.08}>
+            {[
+              { icon: "🌱", title: "Naturally Grown", desc: "Chemical-free farming that respects the land and produces healthier, tastier fruit." },
+              { icon: "🚚", title: "Farm Fresh Delivery", desc: "Harvested at peak ripeness and delivered directly from our orchard to your home." },
+              { icon: "🥭", title: "Premium Seasonal Fruits", desc: "Kesar, Alphonso, Totapuri mangoes, Jamun, Guava, and more — grown with care." },
+              { icon: "❤️", title: "Family-Owned Since 2020", desc: "A Marathwada family farm rooted in tradition, committed to organic excellence." },
+            ].map((item) => (
+              <AnimatedChild key={item.title}>
+                <div className="group rounded-2xl bg-white border border-border/40 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl mx-auto group-hover:bg-primary/20 transition-colors">
+                    <span>{item.icon}</span>
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground leading-relaxed italic">&ldquo;{review.content}&rdquo;</p>
-                  <div className="mt-4 flex items-center gap-3 pt-4 border-t border-border/40">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{review.name.charAt(0)}</div>
-                    <div>
-                      <p className="text-sm font-semibold">{review.name}</p>
-                      <p className="text-xs text-muted-foreground">{review.role}</p>
-                    </div>
-                  </div>
+                  <h3 className="mt-4 font-heading font-bold text-foreground">{item.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
               </AnimatedChild>
             ))}
