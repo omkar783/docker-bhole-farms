@@ -1,49 +1,77 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
+import sharp from "sharp";
+import { v4 as uuidv4 } from "uuid";
+import { storageService } from "@/lib/storage";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const files = formData.getAll("files[]") as File[];
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ success: false, error: "No files provided" }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Only JPG, JPEG, PNG, and WEBP are allowed." },
-        { status: 400 }
-      );
+    const results: { id: string; path: string; width: number; height: number; size: number; mimeType: string }[] = [];
+
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid file type: ${file.type}. Allowed: JPG, PNG, WEBP` },
+          { status: 400 }
+        );
+      }
+
+      const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid extension: ${ext}` },
+          { status: 400 }
+        );
+      }
+
+      if (file.size > MAX_SIZE) {
+        return NextResponse.json(
+          { success: false, error: `File too large: ${file.name}. Max 5 MB` },
+          { status: 400 }
+        );
+      }
+
+      const bytes = await file.arrayBuffer();
+      const inputBuffer = Buffer.from(bytes);
+
+      // Convert to WEBP, strip metadata, compress
+      const processed = await sharp(inputBuffer)
+        .webp({ quality: 80 })
+        .toBuffer();
+
+      const metadata = await sharp(processed).metadata();
+
+      const uuid = uuidv4();
+      const filename = `${uuid}.webp`;
+      const relativePath = `uploads/temp/${filename}`;
+
+      await storageService.save(processed, relativePath);
+
+      results.push({
+        id: uuid,
+        path: `/${relativePath}`,
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        size: processed.length,
+        mimeType: "image/webp",
+      });
     }
 
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: "File size exceeds 5 MB limit." },
-        { status: 400 }
-      );
-    }
-
-    const ext = path.extname(file.name) || ".jpg";
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-    await mkdir(uploadDir, { recursive: true });
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(path.join(uploadDir, filename), buffer);
-
-    const url = `/uploads/${filename}`;
-
-    return NextResponse.json({ url, success: true });
-  } catch {
+    return NextResponse.json({ success: true, files: results });
+  } catch (err) {
+    console.error("Upload error:", err);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { success: false, error: err instanceof Error ? err.message : "Upload failed" },
       { status: 500 }
     );
   }
