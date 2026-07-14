@@ -46,7 +46,7 @@ export async function createProduct(formData: FormData) {
       await tx.productImage.createMany({
         data: images.map((img, i) => ({
           productId: product.id,
-          imagePath: img.path.startsWith("/") ? img.path.slice(1) : img.path,
+          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
           sortOrder: i,
           isThumbnail: i === 0,
         })),
@@ -119,7 +119,7 @@ export async function updateProduct(id: string, formData: FormData) {
       await tx.productImage.createMany({
         data: newEntries.map((img, i) => ({
           productId: id,
-          imagePath: img.path.startsWith("/") ? img.path.slice(1) : img.path,
+          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
           sortOrder: maxOrder + i + 1,
           isThumbnail: maxOrder + i === 0 && existingImages.length === 0,
         })),

@@ -58,7 +58,6 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
   const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
-      formData.set("imagesData", JSON.stringify(uploadedFiles));
       formData.set("unit", selectedUnit);
       formData.set("categoryId", selectedCategory);
       await action(formData);

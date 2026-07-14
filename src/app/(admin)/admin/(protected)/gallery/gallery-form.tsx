@@ -32,7 +32,6 @@ export function GalleryForm({ itemId, defaultValues }: GalleryFormProps) {
 
   const [state, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
-      formData.set("imagesData", JSON.stringify(uploadedFiles));
       await action(formData);
     },
     undefined

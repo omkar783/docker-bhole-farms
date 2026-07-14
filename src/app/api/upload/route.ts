@@ -10,7 +10,8 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const files = formData.getAll("files[]") as File[];
+    const entries = formData.getAll("files[]");
+    const files = entries.filter((entry): entry is File => entry instanceof File);
 
     if (!files || files.length === 0) {
       return NextResponse.json({ success: false, error: "No files provided" }, { status: 400 });

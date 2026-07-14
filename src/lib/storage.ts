@@ -10,16 +10,20 @@ export interface IStorageService {
 
 const UPLOAD_ROOT = path.join(process.cwd(), "public");
 
+function normalize(p: string) {
+  return p.startsWith("/") ? p.slice(1) : p;
+}
+
 export const storageService: IStorageService = {
   async save(buffer: Buffer, relativePath: string): Promise<string> {
-    const absolutePath = path.join(UPLOAD_ROOT, relativePath);
+    const absolutePath = path.join(UPLOAD_ROOT, normalize(relativePath));
     await mkdir(path.dirname(absolutePath), { recursive: true });
     await writeFile(absolutePath, buffer);
     return relativePath;
   },
 
   async delete(relativePath: string): Promise<void> {
-    const absolutePath = path.join(UPLOAD_ROOT, relativePath);
+    const absolutePath = path.join(UPLOAD_ROOT, normalize(relativePath));
     try {
       await unlink(absolutePath);
     } catch (err) {
@@ -28,15 +32,15 @@ export const storageService: IStorageService = {
   },
 
   async move(sourceRelative: string, destRelative: string): Promise<string> {
-    const sourceAbs = path.join(UPLOAD_ROOT, sourceRelative);
-    const destAbs = path.join(UPLOAD_ROOT, destRelative);
+    const sourceAbs = path.join(UPLOAD_ROOT, normalize(sourceRelative));
+    const destAbs = path.join(UPLOAD_ROOT, normalize(destRelative));
     await mkdir(path.dirname(destAbs), { recursive: true });
     await rename(sourceAbs, destAbs);
     return destRelative;
   },
 
   async exists(relativePath: string): Promise<boolean> {
-    const absolutePath = path.join(UPLOAD_ROOT, relativePath);
+    const absolutePath = path.join(UPLOAD_ROOT, normalize(relativePath));
     try {
       await access(absolutePath);
       return true;

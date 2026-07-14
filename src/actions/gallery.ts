@@ -25,7 +25,7 @@ export async function createGalleryItem(formData: FormData) {
       await tx.galleryImage.createMany({
         data: images.map((img, i) => ({
           galleryId: item.id,
-          imagePath: img.path.startsWith("/") ? img.path.slice(1) : img.path,
+          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
           sortOrder: i,
         })),
       });
@@ -75,7 +75,7 @@ export async function updateGalleryItem(id: string, formData: FormData) {
       await tx.galleryImage.createMany({
         data: newEntries.map((img, i) => ({
           galleryId: id,
-          imagePath: img.path.startsWith("/") ? img.path.slice(1) : img.path,
+          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
           sortOrder: maxOrder + i + 1,
         })),
       });
