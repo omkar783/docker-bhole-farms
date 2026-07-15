@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    if (!phone || typeof phone !== "string" || !/^\d{10,15}$/.test(phone.trim())) {
+    if (phone && (typeof phone !== "string" || !/^\d{10,15}$/.test(phone.trim()))) {
       return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
     }
 
