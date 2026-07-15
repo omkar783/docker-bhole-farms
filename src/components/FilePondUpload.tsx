@@ -103,6 +103,7 @@ export default function FilePondUpload({
           load: null,
           fetch: null,
         }}
+        onupdatefiles={() => {}}
         onprocessfile={(error: any, file: any) => {
           console.log("[FilePondUpload] onprocessfile fired", { error: error?.message, serverId: file.serverId, filename: file.filename });
           if (error) { console.error("[FilePondUpload] upload error", error); return; }
