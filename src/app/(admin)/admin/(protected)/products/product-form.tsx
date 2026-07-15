@@ -57,28 +57,29 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
   const [selectedUnit, setSelectedUnit] = useState(defaultValues?.unit || "");
   const [selectedCategory, setSelectedCategory] = useState(defaultValues?.categoryId || "");
 
-  const [, formAction, pending] = useActionState(
-    async (_prev: unknown, formData: FormData) => {
+  const [errorMsg, formAction, pending] = useActionState(
+    async (_prev: string | undefined, formData: FormData) => {
       formData.set("unit", selectedUnit);
       formData.set("categoryId", selectedCategory);
-      console.log("[ProductForm] submitting form");
-      console.log("[ProductForm] uploadedFiles state:", uploadedFiles);
-      console.log("[ProductForm] uploadedFiles ref:", uploadedFilesRef.current);
       formData.set("imagesData", JSON.stringify(uploadedFilesRef.current));
-      console.log("[ProductForm] imagesData set from ref:", JSON.stringify(uploadedFilesRef.current));
-      await action(formData);
+      const res = await action(formData);
+      return res?.error || undefined;
     },
     undefined
   );
 
   const handleFilesChange = useCallback((files: UploadedFile[]) => {
-    console.log("[ProductForm] handleFilesChange called with", files, "stack:", new Error().stack?.split("\n").slice(2, 6).join(" | "));
     uploadedFilesRef.current = files;
     setUploadedFiles(files);
   }, []);
 
   return (
     <form action={formAction} className="max-w-3xl space-y-6">
+      {errorMsg && (
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20 font-semibold">
+          {errorMsg}
+        </div>
+      )}
       <CardSection title="Basic Information" description="Product name, description, and pricing">
         <div className="grid gap-4 md:grid-cols-2">
           <FormSection title="Name" className="space-y-2">

@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { revalidateProduct } from "@/lib/revalidation";
 
@@ -19,55 +20,70 @@ export async function createProduct(formData: FormData) {
   const stockRaw = formData.get("stock");
   const stock = stockRaw ? parseInt(stockRaw as string) : null;
   const imagesData = formData.get("imagesData") as string;
-  console.log("[createProduct] received imagesData raw:", imagesData);
 
   let images: { path: string }[] = [];
   try {
     if (imagesData) images = JSON.parse(imagesData);
-    console.log("[createProduct] parsed images:", JSON.stringify(images));
-  } catch (e) {
-    console.error("[createProduct] JSON.parse failed for imagesData", e);
-  }
+  } catch {}
 
   let productId: string | undefined;
 
-  await prisma.$transaction(async (tx) => {
-    const product = await tx.product.create({
-      data: {
-        name,
-        slug,
-        description,
-        shortDescription,
-        price,
-        categoryId,
-        unit: unit as any,
-        sku,
-        isFeatured,
-        isSeasonal,
-        season,
-        stock,
-        isActive: true,
-      },
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Check if slug is unique
+      const existing = await tx.product.findUnique({
+        where: { slug },
+      });
+      if (existing) {
+        throw new Error("A product with this slug already exists.");
+      }
+
+      // Check if SKU is unique (if provided)
+      if (sku) {
+        const existingSku = await tx.product.findFirst({
+          where: { sku },
+        });
+        if (existingSku) {
+          throw new Error("A product with this SKU already exists.");
+        }
+      }
+
+      const product = await tx.product.create({
+        data: {
+          name,
+          slug,
+          description,
+          shortDescription,
+          price,
+          categoryId,
+          unit: unit as any,
+          sku,
+          isFeatured,
+          isSeasonal,
+          season,
+          stock,
+          isActive: true,
+        },
+      });
+      productId = product.id;
+
+      if (images.length > 0) {
+        const imageData = images.map((img, i) => ({
+          productId: product.id,
+          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
+          sortOrder: i,
+          isThumbnail: i === 0,
+        }));
+        await tx.productImage.createMany({ data: imageData });
+      }
     });
-    productId = product.id;
+  } catch (error: any) {
+    console.error("Error creating product:", error);
+    return { error: error.message || "Failed to create product." };
+  }
 
-    if (images.length > 0) {
-      const imageData = images.map((img, i) => ({
-        productId: product.id,
-        imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
-        sortOrder: i,
-        isThumbnail: i === 0,
-      }));
-      console.log("[createProduct] creating ProductImages:", JSON.stringify(imageData));
-      await tx.productImage.createMany({ data: imageData });
-      console.log("[createProduct] ProductImages created");
-    } else {
-      console.warn("[createProduct] no images to create - images array empty");
-    }
-  });
-
-  console.log("[createProduct] transaction complete, product id:", productId);
   revalidateProduct(slug);
+  redirect("/admin/products");
 }
 
 export async function updateProduct(id: string, formData: FormData) {
@@ -91,56 +107,86 @@ export async function updateProduct(id: string, formData: FormData) {
     if (imagesData) newImages = JSON.parse(imagesData);
   } catch {}
 
-  await prisma.$transaction(async (tx) => {
-    await tx.product.update({
-      where: { id },
-      data: {
-        name,
-        slug,
-        description,
-        shortDescription,
-        price: price || null,
-        categoryId,
-        unit: unit as any,
-        sku,
-        isFeatured,
-        isSeasonal,
-        season,
-        stock,
-        isActive,
-      },
-    });
-
-    const existingImages = await tx.productImage.findMany({
-      where: { productId: id },
-      select: { id: true, imagePath: true },
-    });
-
-    const keptImageIds = newImages.filter((img) => img.id).map((img) => img.id);
-    const toDelete = existingImages.filter((img) => !keptImageIds.includes(img.id));
-    if (toDelete.length > 0) {
-      await tx.productImage.deleteMany({
-        where: { id: { in: toDelete.map((img) => img.id) } },
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Check if slug is unique for other products
+      const existing = await tx.product.findFirst({
+        where: {
+          slug,
+          id: { not: id },
+        },
       });
-    }
+      if (existing) {
+        throw new Error("A product with this slug already exists.");
+      }
 
-    const newEntries = newImages.filter((img) => !img.id);
-    if (newEntries.length > 0) {
-      const maxOrder = existingImages.length > 0
-        ? Math.max(...existingImages.map((img) => img.id === keptImageIds.find((k) => k === img.id) ? 0 : 0))
-        : 0;
-      await tx.productImage.createMany({
-        data: newEntries.map((img, i) => ({
-          productId: id,
-          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
-          sortOrder: maxOrder + i + 1,
-          isThumbnail: maxOrder + i === 0 && existingImages.length === 0,
-        })),
+      // Check if SKU is unique for other products (if provided)
+      if (sku) {
+        const existingSku = await tx.product.findFirst({
+          where: {
+            sku,
+            id: { not: id },
+          },
+        });
+        if (existingSku) {
+          throw new Error("A product with this SKU already exists.");
+        }
+      }
+
+      await tx.product.update({
+        where: { id },
+        data: {
+          name,
+          slug,
+          description,
+          shortDescription,
+          price: price || null,
+          categoryId,
+          unit: unit as any,
+          sku,
+          isFeatured,
+          isSeasonal,
+          season,
+          stock,
+          isActive,
+        },
       });
-    }
-  });
+
+      const existingImages = await tx.productImage.findMany({
+        where: { productId: id },
+        select: { id: true, imagePath: true },
+      });
+
+      const keptImageIds = newImages.filter((img) => img.id).map((img) => img.id);
+      const toDelete = existingImages.filter((img) => !keptImageIds.includes(img.id));
+      if (toDelete.length > 0) {
+        await tx.productImage.deleteMany({
+          where: { id: { in: toDelete.map((img) => img.id) } },
+        });
+      }
+
+      const newEntries = newImages.filter((img) => !img.id);
+      if (newEntries.length > 0) {
+        const maxOrder = existingImages.length > 0
+          ? Math.max(...existingImages.map((img) => img.id === keptImageIds.find((k) => k === img.id) ? 0 : 0))
+          : 0;
+        await tx.productImage.createMany({
+          data: newEntries.map((img, i) => ({
+            productId: id,
+            imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
+            sortOrder: maxOrder + i + 1,
+            isThumbnail: maxOrder + i === 0 && existingImages.length === 0,
+          })),
+        });
+      }
+    });
+  } catch (error: any) {
+    console.error("Error updating product:", error);
+    return { error: error.message || "Failed to update product." };
+  }
 
   revalidateProduct(slug);
+  redirect("/admin/products");
 }
 
 export async function deleteProduct(id: string, formData?: FormData) {

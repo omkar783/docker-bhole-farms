@@ -14,11 +14,6 @@ export default async function ProductsPage() {
     prisma.category.findMany({ orderBy: { order: "asc" } }),
   ]);
 
-  console.log("[ProductsPage] products count:", products.length);
-  products.forEach((p) => {
-    console.log(`[ProductsPage] product "${p.name}": images=`, JSON.stringify(p.images));
-  });
-
   return (
     <>
       {/* Premium Products Hero */}
