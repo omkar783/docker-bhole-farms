@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useCallback } from "react";
+import { useActionState, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,25 +52,34 @@ const PRODUCT_UNITS = ["KG", "GRAM", "DOZEN", "BOX", "PIECE", "LITER", "ML", "BU
 
 export function ProductForm({ categories, productId, defaultValues }: ProductFormProps) {
   const action = productId ? updateProduct.bind(null, productId) : createProduct;
+  const uploadedFilesRef = useRef<UploadedFile[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [selectedUnit, setSelectedUnit] = useState(defaultValues?.unit || "");
   const [selectedCategory, setSelectedCategory] = useState(defaultValues?.categoryId || "");
 
-  const [, formAction, pending] = useActionState(
-    async (_prev: unknown, formData: FormData) => {
+  const [errorMsg, formAction, pending] = useActionState(
+    async (_prev: string | undefined, formData: FormData) => {
       formData.set("unit", selectedUnit);
       formData.set("categoryId", selectedCategory);
-      await action(formData);
+      formData.set("imagesData", JSON.stringify(uploadedFilesRef.current));
+      const res = await action(formData);
+      return res?.error || undefined;
     },
     undefined
   );
 
   const handleFilesChange = useCallback((files: UploadedFile[]) => {
+    uploadedFilesRef.current = files;
     setUploadedFiles(files);
   }, []);
 
   return (
     <form action={formAction} className="max-w-3xl space-y-6">
+      {errorMsg && (
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20 font-semibold">
+          {errorMsg}
+        </div>
+      )}
       <CardSection title="Basic Information" description="Product name, description, and pricing">
         <div className="grid gap-4 md:grid-cols-2">
           <FormSection title="Name" className="space-y-2">
