@@ -39,6 +39,8 @@ export default function FilePondUpload({
   onFilesChangeRef.current = onFilesChange;
   const FilePondComponent = FilePond as any;
 
+  const prevExistingRef = useRef(existingImages);
+
   // Load existing images on mount
   useEffect(() => {
     if (existingImages.length > 0) {

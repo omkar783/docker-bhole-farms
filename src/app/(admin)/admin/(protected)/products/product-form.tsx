@@ -72,7 +72,7 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
   );
 
   const handleFilesChange = useCallback((files: UploadedFile[]) => {
-    console.log("[ProductForm] handleFilesChange called with", files);
+    console.log("[ProductForm] handleFilesChange called with", files, "stack:", new Error().stack?.split("\n").slice(2, 6).join(" | "));
     uploadedFilesRef.current = files;
     setUploadedFiles(files);
   }, []);
