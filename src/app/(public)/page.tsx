@@ -40,7 +40,7 @@ const features = [
 export default async function HomePage() {
   const [featuredProducts, settings] = await Promise.all([
     prisma.product.findMany({
-      where: { isFeatured: true },
+      where: { isFeatured: true, isDeleted: false, isActive: true },
       take: 4,
       include: { images: { orderBy: { sortOrder: "asc" } } },
     }),

@@ -15,7 +15,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const [product, settings] = await Promise.all([
     prisma.product.findUnique({
-      where: { slug },
+      where: { slug, isDeleted: false, isActive: true },
       include: { images: { orderBy: { sortOrder: "asc" } } },
     }),
     getSettings(),
