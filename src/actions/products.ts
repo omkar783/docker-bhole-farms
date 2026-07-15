@@ -19,11 +19,15 @@ export async function createProduct(formData: FormData) {
   const stockRaw = formData.get("stock");
   const stock = stockRaw ? parseInt(stockRaw as string) : null;
   const imagesData = formData.get("imagesData") as string;
+  console.log("[createProduct] received imagesData raw:", imagesData);
 
   let images: { path: string }[] = [];
   try {
     if (imagesData) images = JSON.parse(imagesData);
-  } catch {}
+    console.log("[createProduct] parsed images:", JSON.stringify(images));
+  } catch (e) {
+    console.error("[createProduct] JSON.parse failed for imagesData", e);
+  }
 
   await prisma.$transaction(async (tx) => {
     const product = await tx.product.create({
@@ -45,17 +49,21 @@ export async function createProduct(formData: FormData) {
     });
 
     if (images.length > 0) {
-      await tx.productImage.createMany({
-        data: images.map((img, i) => ({
-          productId: product.id,
-          imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
-          sortOrder: i,
-          isThumbnail: i === 0,
-        })),
-      });
+      const imageData = images.map((img, i) => ({
+        productId: product.id,
+        imagePath: img.path.startsWith("/") ? img.path : "/" + img.path,
+        sortOrder: i,
+        isThumbnail: i === 0,
+      }));
+      console.log("[createProduct] creating ProductImages:", JSON.stringify(imageData));
+      await tx.productImage.createMany({ data: imageData });
+      console.log("[createProduct] ProductImages created");
+    } else {
+      console.warn("[createProduct] no images to create - images array empty");
     }
   });
 
+  console.log("[createProduct] transaction complete, product id:", product?.id);
   revalidateProduct(slug);
 }
 

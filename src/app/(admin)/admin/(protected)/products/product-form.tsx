@@ -60,12 +60,17 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
     async (_prev: unknown, formData: FormData) => {
       formData.set("unit", selectedUnit);
       formData.set("categoryId", selectedCategory);
+      console.log("[ProductForm] submitting form");
+      console.log("[ProductForm] uploadedFiles state:", uploadedFiles);
+      console.log("[ProductForm] imagesData from hidden input:", formData.get("imagesData"));
+      console.log("[ProductForm] all formData entries:", [...formData.entries()].map(([k, v]) => `${k}=${v}`));
       await action(formData);
     },
     undefined
   );
 
   const handleFilesChange = useCallback((files: UploadedFile[]) => {
+    console.log("[ProductForm] handleFilesChange called with", files);
     setUploadedFiles(files);
   }, []);
 

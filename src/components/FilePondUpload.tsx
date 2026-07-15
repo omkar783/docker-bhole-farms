@@ -101,17 +101,26 @@ export default function FilePondUpload({
           load: null,
           fetch: null,
         }}
-        onprocessfile={(_error: any, file: any) => {
+        onprocessfile={(error: any, file: any) => {
+          console.log("[FilePondUpload] onprocessfile fired", { error: error?.message, serverId: file.serverId, filename: file.filename });
+          if (error) { console.error("[FilePondUpload] upload error", error); return; }
           const serverId = file.serverId;
           if (serverId && typeof serverId === "string") {
             try {
               const parsed = JSON.parse(serverId);
+              console.log("[FilePondUpload] parsed serverId", parsed);
               uploadedRef.current = [
                 ...uploadedRef.current,
                 { ...parsed, isExisting: false },
               ];
+              console.log("[FilePondUpload] updated ref", uploadedRef.current);
               onFilesChangeRef.current(uploadedRef.current);
-            } catch {}
+              console.log("[FilePondUpload] synced to parent");
+            } catch (e) {
+              console.error("[FilePondUpload] JSON.parse failed", e);
+            }
+          } else {
+            console.warn("[FilePondUpload] no serverId on processed file");
           }
         }}
         onremovefile={(_error: any, file: any) => {
