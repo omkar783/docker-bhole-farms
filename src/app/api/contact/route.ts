@@ -24,15 +24,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    if (phone && (typeof phone !== "string" || !/^\d{10,15}$/.test(phone.trim()))) {
-      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+    if (phone && phone.trim() !== "") {
+      const cleanPhone = phone.replace(/[^\d]/g, "");
+      if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+        return NextResponse.json({ error: "Invalid phone number (must be 10-15 digits)" }, { status: 400 });
+      }
     }
 
     if (!message || typeof message !== "string" || message.trim().length < 10) {
       return NextResponse.json({ error: "Message must be at least 10 characters" }, { status: 400 });
     }
 
-    sendContactNotification({ name, email, phone, message });
+    try {
+      await sendContactNotification({ name, email, phone, message });
+    } catch {
+      return NextResponse.json(
+        { error: "Failed to send message. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch {

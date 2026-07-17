@@ -1,0 +1,170 @@
+# ============================================
+# Docker Security Overlay
+# Merge: docker-compose -f docker-compose.yml -f docker-compose.security.yml up -d
+# ============================================
+
+version: "3.9"
+
+x-security-defaults: &security-defaults
+  # Drop all capabilities and add only what's needed
+  cap_drop:
+    - ALL
+  cap_add:
+    - NET_BIND_SERVICE  # Allow binding to ports <1024
+  # Prevent privilege escalation
+  security_opt:
+    - no-new-privileges:true
+  # Run as non-root (use specific UID:GID per service)
+  # Read-only root filesystem (prevents container tampering)
+  read_only: true
+  # Resource limits
+  deploy:
+    resources:
+      limits:
+        cpus: "0.5"
+        memory: "256M"
+      reservations:
+        cpus: "0.1"
+        memory: "128M"
+  # Restart policy
+  restart: unless-stopped
+  # Logging — prevent unbounded log growth
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bhole-postgres
+    <<: *security-defaults
+    # PostgreSQL needs a writable data directory, so override read_only
+    # Temporarily writable for its data volume
+    read_only: false
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    environment:
+      POSTGRES_DB: bhole_prod
+      POSTGRES_USER: bhole_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      # Use SSL for connections
+      POSTGRES_SSL: "on"
+    volumes:
+      # Persistent data — the only writable location
+      - postgres_data:/var/lib/postgresql/data:rw
+      # Init scripts
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    secrets:
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bhole_user -d bhole_prod"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512M"
+
+  # Optional: Redis for caching/sessions
+  redis:
+    image: redis:7-alpine
+    container_name: bhole-redis
+    <<: *security-defaults
+    cap_add:
+      - NET_BIND_SERVICE
+    command:
+      - redis-server
+      - --appendonly yes
+      - --requirepass ${REDIS_PASSWORD}
+      - --rename-command FLUSHALL ""
+      - --rename-command FLUSHDB ""
+      - --rename-command CONFIG ""
+    volumes:
+      - redis_data:/data:rw
+    secrets:
+      - redis_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - internal
+
+  # Next.js app (if self-hosted)
+  web:
+    image: bhole-web:latest
+    container_name: bhole-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    <<: *security-defaults
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://bhole_user@postgres:5432/bhole_prod
+      NEXTAUTH_URL: https://bholefarms.com
+      # All other env vars from secrets
+    secrets:
+      - nextauth_secret
+      - resend_api_key
+    volumes:
+      # Temp directory for uploads (writable)
+      - web_tmp:/tmp:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+      - frontend
+    ports:
+      - "127.0.0.1:3000:3000"  # Bind to localhost only, Nginx proxies
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512M"
+
+volumes:
+  postgres_data:
+    driver: local
+    # Encrypted volume (if storage driver supports it)
+    # driver_opts:
+    #   encrypt: "true"
+  redis_data:
+    driver: local
+  web_tmp:
+    driver: local
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  nextauth_secret:
+    file: ./secrets/nextauth_secret.txt
+  resend_api_key:
+    file: ./secrets/resend_api_key.txt
+
+networks:
+  internal:
+    driver: bridge
+    internal: true  # No external access — database is isolated
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

@@ -3,8 +3,13 @@ import { render } from "@react-email/components";
 import OrderNotification from "@/emails/order-notification";
 import ContactNotification from "@/emails/contact-notification";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-const adminEmail = process.env.ADMIN_EMAIL!;
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || "");
+}
+
+function getAdminEmail() {
+  return process.env.ADMIN_EMAIL || "admin@bholefarms.com";
+}
 
 interface OrderNotificationData {
   customerName: string;
@@ -25,9 +30,9 @@ interface ContactNotificationData {
 export async function sendOrderNotification(data: OrderNotificationData) {
   try {
     const html = await render(<OrderNotification {...data} />);
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "Bhole Farms <onboarding@resend.dev>",
-      to: adminEmail,
+      to: getAdminEmail(),
       subject: `New Order Enquiry — ${data.customerName}`,
       html,
       replyTo: data.email || undefined,
@@ -40,14 +45,15 @@ export async function sendOrderNotification(data: OrderNotificationData) {
 export async function sendContactNotification(data: ContactNotificationData) {
   try {
     const html = await render(<ContactNotification {...data} />);
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "Bhole Farms <onboarding@resend.dev>",
-      to: adminEmail,
+      to: getAdminEmail(),
       subject: `New Contact Message — ${data.name}`,
       html,
       replyTo: data.email,
     });
   } catch (error) {
     console.error("Failed to send contact notification email:", error);
+    throw error;
   }
 }

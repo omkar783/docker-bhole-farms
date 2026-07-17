@@ -13,6 +13,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Enable standalone output for Docker (minimal production image)
+  output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
+
+  // Include Prisma generated files in the standalone trace
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/.prisma/**/*", "./prisma/**/*"],
+  },
+
+  // Skip i18n localization (not needed)
+  i18n: undefined,
+
   headers: async () => [
     {
       source: "/(.*)",

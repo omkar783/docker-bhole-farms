@@ -1,0 +1,79 @@
+# ============================================
+# Docker ignore — keep build context small
+# ============================================
+
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+
+# Next.js build output
+.next
+out
+build
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.docker
+.env.example
+
+# IDE and OS files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage
+__tests__
+__mocks__
+
+# Uploads (temp uploads excluded, volume mount used at runtime)
+public/uploads/temp
+
+# Generated Prisma client (rebuilt in Docker)
+src/generated/prisma
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Security docs
+security
+docs
+
+# OpenCode / agent config
+.omo
+.opencode
+.superpowers
+AGENTS.md
+CLAUDE.md
+
+# Vercel
+.vercel
+
+# Misc
+*.pem
+*.cert
+*.key
